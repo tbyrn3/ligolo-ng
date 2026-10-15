@@ -4,11 +4,11 @@
 package tun
 
 import (
-	"github.com/nicocha30/gvisor-ligolo/pkg/buffer"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/header"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/stack"
 	wgtun "golang.zx2c4.com/wireguard/tun"
+	"gvisor.dev/gvisor/pkg/buffer"
+	"gvisor.dev/gvisor/pkg/tcpip"
+	"gvisor.dev/gvisor/pkg/tcpip/header"
+	"gvisor.dev/gvisor/pkg/tcpip/stack"
 )
 
 type RWEndpoint struct {
@@ -29,6 +29,11 @@ func (m *RWEndpoint) MTU() uint32 {
 	return m.mtu
 }
 
+// SetMTU implements stack.LinkEndpoint.
+func (m *RWEndpoint) SetMTU(mtu uint32) {
+	m.mtu = mtu
+}
+
 // Capabilities implements stack.LinkEndpoint.
 func (m *RWEndpoint) Capabilities() stack.LinkEndpointCapabilities {
 	return stack.CapabilityNone
@@ -43,6 +48,9 @@ func (m *RWEndpoint) MaxHeaderLength() uint16 {
 func (m *RWEndpoint) LinkAddress() tcpip.LinkAddress {
 	return ""
 }
+
+// SetLinkAddress implements stack.LinkEndpoint.
+func (*RWEndpoint) SetLinkAddress(tcpip.LinkAddress) {}
 
 // Attach implements stack.LinkEndpoint.
 func (m *RWEndpoint) Attach(dispatcher stack.NetworkDispatcher) {
@@ -97,7 +105,7 @@ func (m *RWEndpoint) WritePackets(pkts stack.PacketBufferList) (int, tcpip.Error
 }
 
 // WritePacket writes outbound packets
-func (m *RWEndpoint) WritePacket(pkt stack.PacketBufferPtr) tcpip.Error {
+func (m *RWEndpoint) WritePacket(pkt *stack.PacketBuffer) tcpip.Error {
 	var buf buffer.Buffer
 	pktBuf := pkt.ToBuffer()
 	buf.Merge(&pktBuf)
@@ -114,18 +122,25 @@ func (m *RWEndpoint) WritePacket(pkt stack.PacketBufferPtr) tcpip.Error {
 // Wait implements stack.LinkEndpoint.Wait.
 func (m *RWEndpoint) Wait() {}
 
+// Close implements stack.LinkEndpoint. The owning Interface closes wgdev.
+func (*RWEndpoint) Close() {}
+
+// SetOnCloseAction implements stack.LinkEndpoint. The owning Interface closes
+// the network device, so the endpoint needs no additional close action.
+func (*RWEndpoint) SetOnCloseAction(func()) {}
+
 // ARPHardwareType implements stack.LinkEndpoint.ARPHardwareType.
 func (*RWEndpoint) ARPHardwareType() header.ARPHardwareType {
 	return header.ARPHardwareNone
 }
 
 // AddHeader implements stack.LinkEndpoint.AddHeader.
-func (*RWEndpoint) AddHeader(pkt stack.PacketBufferPtr) {
+func (*RWEndpoint) AddHeader(pkt *stack.PacketBuffer) {
 }
 
 // WriteRawPacket implements stack.LinkEndpoint.
-func (*RWEndpoint) WriteRawPacket(stack.PacketBufferPtr) tcpip.Error {
+func (*RWEndpoint) WriteRawPacket(*stack.PacketBuffer) tcpip.Error {
 	return &tcpip.ErrNotSupported{}
 }
 
-func (*RWEndpoint) ParseHeader(stack.PacketBufferPtr) bool { return true }
+func (*RWEndpoint) ParseHeader(*stack.PacketBuffer) bool { return true }

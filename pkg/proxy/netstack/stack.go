@@ -19,17 +19,18 @@ package netstack
 import (
 	"errors"
 	"fmt"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/header"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/network/ipv4"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/network/ipv6"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/stack"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/transport/icmp"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/transport/tcp"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/transport/udp"
+	"sync"
+
 	"github.com/nicocha30/ligolo-ng/pkg/proxy/netstack/tun"
 	"github.com/sirupsen/logrus"
-	"sync"
+	"gvisor.dev/gvisor/pkg/tcpip"
+	"gvisor.dev/gvisor/pkg/tcpip/header"
+	"gvisor.dev/gvisor/pkg/tcpip/network/ipv4"
+	"gvisor.dev/gvisor/pkg/tcpip/network/ipv6"
+	"gvisor.dev/gvisor/pkg/tcpip/stack"
+	"gvisor.dev/gvisor/pkg/tcpip/transport/icmp"
+	"gvisor.dev/gvisor/pkg/tcpip/transport/tcp"
+	"gvisor.dev/gvisor/pkg/tcpip/transport/udp"
 )
 
 type TunConn struct {
@@ -88,7 +89,7 @@ type UDPConn struct {
 
 // ICMPConn represents a ICMP Packet Buffer
 type ICMPConn struct {
-	Request stack.PacketBufferPtr
+	Request *stack.PacketBuffer
 }
 
 // NetStack is the structure used to store the connection pool and the gvisor network stack
@@ -102,6 +103,15 @@ type NetStack struct {
 type StackSettings struct {
 	TunName     string
 	MaxInflight int
+}
+
+// configureICMPHandling preserves the fork's IPv4 behavior using upstream's
+// per-stack fallback hook. Raw endpoints receive the packet before this hook;
+// returning true prevents gVisor from generating its own echo reply.
+func configureICMPHandling(ns *stack.Stack) {
+	ns.SetTransportProtocolHandler(icmp.ProtocolNumber4, func(stack.TransportEndpointID, *stack.PacketBuffer) bool {
+		return true
+	})
 }
 
 // NewStack registers a new GVisor Network Stack
@@ -145,9 +155,7 @@ func (s *NetStack) new(stackSettings StackSettings) (*stack.Stack, error) {
 
 	s.stack = ns
 
-	// Incoming ICMP handling is disabled in the gVisor fork and handled by
-	// icmpResponder below. Keep the default ICMP rate limiter enabled so the
-	// stack can still emit errors such as UDP Port Unreachable.
+	configureICMPHandling(ns)
 
 	// Forward TCP connections
 	tcpHandler := tcp.NewForwarder(ns, 0, stackSettings.MaxInflight, func(request *tcp.ForwarderRequest) {
@@ -170,7 +178,7 @@ func (s *NetStack) new(stackSettings StackSettings) (*stack.Stack, error) {
 	})
 
 	// Forward UDP connections
-	udpHandler := udp.NewForwarder(ns, func(request *udp.ForwarderRequest) {
+	udpHandler := udp.NewForwarder(ns, func(request *udp.ForwarderRequest) bool {
 
 		udpConn := UDPConn{
 			EndpointID: request.ID(),
@@ -181,7 +189,7 @@ func (s *NetStack) new(stackSettings StackSettings) (*stack.Stack, error) {
 		defer s.Unlock()
 
 		if s.pool == nil || s.pool.Closed() {
-			return // If connPool is closed, ignore packet.
+			return true // If connPool is closed, ignore packet.
 		}
 
 		if err := s.pool.Add(TunConn{
@@ -190,6 +198,7 @@ func (s *NetStack) new(stackSettings StackSettings) (*stack.Stack, error) {
 		}); err != nil {
 			logrus.Error(err)
 		}
+		return true
 	})
 
 	// Register forwarders

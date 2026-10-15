@@ -20,16 +20,16 @@ import (
 	"bytes"
 	"errors"
 
-	"github.com/nicocha30/gvisor-ligolo/pkg/buffer"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/checksum"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/header"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/network/ipv4"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/stack"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/transport/icmp"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/transport/raw"
-	"github.com/nicocha30/gvisor-ligolo/pkg/waiter"
 	"github.com/sirupsen/logrus"
+	"gvisor.dev/gvisor/pkg/buffer"
+	"gvisor.dev/gvisor/pkg/tcpip"
+	"gvisor.dev/gvisor/pkg/tcpip/checksum"
+	"gvisor.dev/gvisor/pkg/tcpip/header"
+	"gvisor.dev/gvisor/pkg/tcpip/network/ipv4"
+	"gvisor.dev/gvisor/pkg/tcpip/stack"
+	"gvisor.dev/gvisor/pkg/tcpip/transport/icmp"
+	"gvisor.dev/gvisor/pkg/tcpip/transport/raw"
+	"gvisor.dev/gvisor/pkg/waiter"
 )
 
 // icmpResponder handle ICMP packets coming to gvisor/netstack.
@@ -115,7 +115,7 @@ func icmpResponder(s *NetStack) error {
 
 // ProcessICMP send back a ICMP echo reply from after receiving a echo request.
 // This code come mostly from pkg/tcpip/network/ipv4/icmp.go
-func ProcessICMP(nstack *stack.Stack, pkt stack.PacketBufferPtr) {
+func ProcessICMP(nstack *stack.Stack, pkt *stack.PacketBuffer) {
 	// (gvisor) pkg/tcpip/network/ipv4/icmp.go:174 - handleICMP
 
 	// ICMP packets don't have their TransportHeader fields set. See
