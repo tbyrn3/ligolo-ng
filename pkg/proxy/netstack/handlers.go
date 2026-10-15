@@ -23,20 +23,20 @@ import (
 	"net"
 
 	"github.com/hashicorp/yamux"
-	"github.com/nicocha30/gvisor-ligolo/pkg/buffer"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/adapters/gonet"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/header"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/network/ipv4"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/network/ipv6"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/stack"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/transport/icmp"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/transport/tcp"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/transport/udp"
-	"github.com/nicocha30/gvisor-ligolo/pkg/waiter"
 	"github.com/nicocha30/ligolo-ng/pkg/protocol"
 	"github.com/nicocha30/ligolo-ng/pkg/relay"
 	"github.com/sirupsen/logrus"
+	"gvisor.dev/gvisor/pkg/buffer"
+	"gvisor.dev/gvisor/pkg/tcpip"
+	"gvisor.dev/gvisor/pkg/tcpip/adapters/gonet"
+	"gvisor.dev/gvisor/pkg/tcpip/header"
+	"gvisor.dev/gvisor/pkg/tcpip/network/ipv4"
+	"gvisor.dev/gvisor/pkg/tcpip/network/ipv6"
+	"gvisor.dev/gvisor/pkg/tcpip/stack"
+	"gvisor.dev/gvisor/pkg/tcpip/transport/icmp"
+	"gvisor.dev/gvisor/pkg/tcpip/transport/tcp"
+	"gvisor.dev/gvisor/pkg/tcpip/transport/udp"
+	"gvisor.dev/gvisor/pkg/waiter"
 )
 
 // handleICMP process incoming ICMP packets and, depending on the target host status, respond a ICMP ECHO Reply
@@ -158,7 +158,7 @@ func sendUDPPortUnreachable(nstack *stack.Stack, endpointID stack.TransportEndpo
 		if !ok {
 			return errors.New("IPv4 network protocol cannot generate rejection errors")
 		}
-		if err := rejector.SendRejectionError(pkt, stack.RejectIPv4WithICMPPortUnreachable, true); err != nil {
+		if err := rejector.SendRejectionError(pkt, stack.RejectIPv4WithICMPPortUnreachable, stack.Input); err != nil {
 			return errors.New(err.String())
 		}
 	case ipv6.ProtocolNumber:
@@ -166,7 +166,7 @@ func sendUDPPortUnreachable(nstack *stack.Stack, endpointID stack.TransportEndpo
 		if !ok {
 			return errors.New("IPv6 network protocol cannot generate rejection errors")
 		}
-		if err := rejector.SendRejectionError(pkt, stack.RejectIPv6WithICMPPortUnreachable, true); err != nil {
+		if err := rejector.SendRejectionError(pkt, stack.RejectIPv6WithICMPPortUnreachable, stack.Input); err != nil {
 			return errors.New(err.String())
 		}
 	}
@@ -275,7 +275,7 @@ func HandlePacket(nstack *stack.Stack, localConn TunConn, yamuxConn *yamux.Sessi
 					return
 				}
 
-				gonetConn := gonet.NewUDPConn(nstack, &wq, ep)
+				gonetConn := gonet.NewUDPConn(&wq, ep)
 				if reply.FramedUDP {
 					go relay.StartFramedPacketRelay(yamuxConnectionSession, gonetConn, nil, func(relayError relay.PacketRelayError, payload []byte) {
 						if relayError != relay.PacketRelayPortUnreachable {

@@ -1,32 +1,29 @@
 module github.com/nicocha30/ligolo-ng
 
-go 1.25.0
+go 1.27.2
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.5
-	github.com/desertbit/grumble v1.1.3
-	github.com/go-ping/ping v1.1.0
-	github.com/hashicorp/yamux v0.1.0
-	github.com/jedib0t/go-pretty/v6 v6.3.5
-	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/crypto v0.54.0
-	golang.org/x/net v0.57.0
-	golang.zx2c4.com/wintun v0.0.0-20211104114900-415007cec224
-	golang.zx2c4.com/wireguard v0.0.0-20220703234212-c31a7b1ab478
-)
-
-require (
 	github.com/coder/websocket v1.8.14
+	github.com/desertbit/grumble v1.1.3
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/static v1.1.5
 	github.com/gin-gonic/gin v1.10.0
+	github.com/go-ping/ping v1.1.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
-	github.com/google/uuid v1.4.0
-	github.com/nicocha30/gvisor-ligolo v0.0.0-20230726075806-989fa2c0a413
+	github.com/google/uuid v1.6.0
+	github.com/hashicorp/yamux v0.1.0
+	github.com/jedib0t/go-pretty/v6 v6.3.5
 	github.com/shamaton/msgpack/v2 v2.4.1
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.19.0
-	github.com/vishvananda/netlink v1.1.1-0.20211118161826-650dca95af54
-	golang.org/x/sys v0.47.0
+	github.com/vishvananda/netlink v1.3.1-0.20250303224720-0e7078ed04c8
+	golang.org/x/crypto v0.57.0
+	golang.org/x/net v0.59.0
+	golang.org/x/sys v0.48.0
+	golang.zx2c4.com/wintun v0.0.0-20211104114900-415007cec224
+	golang.zx2c4.com/wireguard v0.0.0-20220703234212-c31a7b1ab478
+	gvisor.dev/gvisor v0.0.0-20261015061108-8cd9df33763f
 )
 
 require (
@@ -72,16 +69,16 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
-	github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae // indirect
+	github.com/vishvananda/netns v0.0.5 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/arch v0.16.0 // indirect
-	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
-	google.golang.org/protobuf v1.36.6 // indirect
+	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc // indirect
+	golang.org/x/sync v0.23.0 // indirect
+	golang.org/x/term v0.46.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/time v0.15.0 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

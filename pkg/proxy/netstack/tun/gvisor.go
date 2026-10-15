@@ -3,11 +3,12 @@
 package tun
 
 import (
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/link/fdbased"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/link/rawfile"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/link/tun"
-	"github.com/nicocha30/gvisor-ligolo/pkg/tcpip/stack"
+	"net"
+
 	"golang.org/x/sys/unix"
+	"gvisor.dev/gvisor/pkg/tcpip/link/fdbased"
+	"gvisor.dev/gvisor/pkg/tcpip/link/tun"
+	"gvisor.dev/gvisor/pkg/tcpip/stack"
 )
 
 type TunInterface struct {
@@ -18,10 +19,11 @@ type TunInterface struct {
 
 func New(tunName string) (*TunInterface, error) {
 	tunIface := TunInterface{}
-	mtu, err := rawfile.GetMTU(tunName)
+	iface, err := net.InterfaceByName(tunName)
 	if err != nil {
 		return nil, err
 	}
+	mtu := uint32(iface.MTU)
 
 	fd, err := tun.Open(tunName)
 	if err != nil {
